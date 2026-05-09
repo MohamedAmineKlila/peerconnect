@@ -39,10 +39,17 @@ class DashboardController extends Controller
             ->get();
 
         $matches = Connection::with(['sender.profile', 'receiver.profile'])
-            ->where('status', 'matched')
-            ->where(fn ($query) => $query->where('sender_id', $user->id)->orWhere('receiver_id', $user->id))
-            ->latest()
-            ->get();
+    ->where('status', 'matched')
+    ->where(fn ($query) => $query->where('sender_id', $user->id)->orWhere('receiver_id', $user->id))
+    ->latest()
+    ->get()
+    ->unique(function ($connection) use ($user) {
+        $otherId = $connection->sender_id === $user->id
+            ? $connection->receiver_id
+            : $connection->sender_id;
+        return $otherId;
+    })
+    ->values();
 
         $respondedUserIds = Connection::where('sender_id', $user->id)->pluck('receiver_id');
         $incomingLikes = Connection::with(['sender.profile.interests'])
