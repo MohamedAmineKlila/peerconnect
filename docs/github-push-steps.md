@@ -8,10 +8,10 @@ Suggested repository name:
 peerconnect
 ```
 
-Commands to run after creating the empty GitHub repository:
+Commands to push to the GitHub repository:
 
 ```bash
-git remote add origin https://github.com/YOUR_USERNAME/peerconnect.git
+git remote add origin https://github.com/MohamedAmineKlila/peerconnect.git
 git branch -M main
 git push -u origin main
 ```
@@ -19,6 +19,6 @@ git push -u origin main
 If `origin` already exists, update it instead:
 
 ```bash
-git remote set-url origin https://github.com/YOUR_USERNAME/peerconnect.git
+git remote set-url origin https://github.com/MohamedAmineKlila/peerconnect.git
 git push -u origin main
 ```
