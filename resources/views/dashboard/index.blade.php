@@ -170,36 +170,39 @@
                 </section>
 
                 <section class="activity-panel" id="matches">
-                <h2>Matches</h2>
-                <div class="mini-match-list">
-                    @forelse ($matches as $match)
-                        @php($other = $match->sender_id === $user->id ? $match->receiver : $match->sender)
-                        <a href="{{ route('connections.show', $match) }}">
-                            <span>{{ strtoupper(substr($other->name, 0, 1)) }}</span>
-                            <div>
-                                <strong>{{ $other->name }}</strong>
-                                <small>{{ $match->matched_at?->format('Y-m-d') ?? 'Matched' }}</small>
+                    <h2>Matches</h2>
+                    <div class="mini-match-list">
+                        @forelse ($matches as $match)
+                            @php($other = $match->sender_id === $user->id ? $match->receiver : $match->sender)
+                            <div class="match-row">
+                                <a href="{{ route('connections.show', $match) }}" class="match-info">
+                                    <span>{{ strtoupper(substr($other->name, 0, 1)) }}</span>
+                                    <div>
+                                        <strong>{{ $other->name }}</strong>
+                                        <small>{{ $match->matched_at?->format('Y-m-d') ?? 'Matched' }}</small>
+                                    </div>
+                                </a>
+                                <a href="{{ route('chat.show', $match) }}" class="chat-pill">💬 Message</a>
                             </div>
-                        </a>
-                    @empty
-                        <p>No matches yet. Press like on profiles you want to connect with.</p>
-                    @endforelse
-                </div>
+                        @empty
+                            <p>No matches yet. Press like on profiles you want to connect with.</p>
+                        @endforelse
+                    </div>
                 </section>
 
                 <section class="activity-panel">
-                <h2>Preview</h2>
-                <div class="preview-stack">
-                    @foreach ($previewProfiles as $profile)
-                        <a href="{{ route('profiles.show', $profile) }}">
-                            <strong>{{ $profile->user->name }}</strong>
-                            <small>{{ $profile->department }}</small>
-                        </a>
-                    @endforeach
-                    @if ($previewProfiles->isEmpty())
-                        <p>More {{ $targetRole }} profiles will appear here as people join.</p>
-                    @endif
-                </div>
+                    <h2>Preview</h2>
+                    <div class="preview-stack">
+                        @foreach ($previewProfiles as $profile)
+                            <a href="{{ route('profiles.show', $profile) }}">
+                                <strong>{{ $profile->user->name }}</strong>
+                                <small>{{ $profile->department }}</small>
+                            </a>
+                        @endforeach
+                        @if ($previewProfiles->isEmpty())
+                            <p>More {{ $targetRole }} profiles will appear here as people join.</p>
+                        @endif
+                    </div>
                 </section>
             </aside>
         </div>

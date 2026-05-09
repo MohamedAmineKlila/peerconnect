@@ -19,27 +19,36 @@ Route::view('/about', 'pages.about')->name('about');
 Route::get('/contact', [ContactMessageController::class, 'create'])->name('contact');
 
 Route::middleware('guest')->group(function () {
-    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->name('login.store');
+    Route::get('/login',    [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login',   [AuthController::class, 'login'])->name('login.store');
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-    Route::post('/register', [AuthController::class, 'register'])->name('register.store');
+    Route::post('/register',[AuthController::class, 'register'])->name('register.store');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
-Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('auth')->name('dashboard');
-Route::post('/dashboard/react/{profile}', [DashboardController::class, 'react'])->middleware('auth')->name('dashboard.react');
-Route::post('/reports/{user}', [ReportController::class, 'store'])->middleware('auth')->name('reports.store');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/dashboard',                    [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('/dashboard/react/{profile}',   [DashboardController::class, 'react'])->name('dashboard.react');
+    Route::post('/reports/{user}',              [ReportController::class, 'store'])->name('reports.store');
+
+    // Chat between matched users
+    Route::get('/chat/{connection}',            [MessageController::class, 'show'])->name('chat.show');
+    Route::post('/chat/{connection}',           [MessageController::class, 'store'])->name('chat.store');
+});
 
 Route::resource('profiles', ProfileController::class);
+
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     Route::get('/admin/access-logs/export', [AdminController::class, 'exportAccessLogs'])->name('admin.access-logs.export');
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('reports', ReportController::class)->only(['index', 'show', 'update', 'destroy']);
     });
-    Route::resource('interests', InterestController::class);
-    Route::resource('connections', ConnectionController::class);
-    Route::resource('messages', MessageController::class);
+    Route::resource('interests',        InterestController::class);
+    Route::resource('connections',      ConnectionController::class);
+    Route::resource('messages',         MessageController::class);
     Route::resource('contact-messages', ContactMessageController::class)->except(['create', 'store']);
 });
+
 Route::post('/contact-messages', [ContactMessageController::class, 'store'])->name('contact-messages.store');

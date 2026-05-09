@@ -1,25 +1,52 @@
 @extends('layouts.app')
 
-@section('title', 'Message')
+@section('title', 'Chat with ' . $other->name)
 
 @section('content')
-    <section class="section narrow">
-        <div class="section-header">
-            <div><p class="eyebrow">Message</p><h1>{{ $message->sender->name }}</h1></div>
-            <div class="actions">
-                <x-button :href="route('messages.edit', $message)" variant="secondary">Edit</x-button>
-                <form method="POST" action="{{ route('messages.destroy', $message) }}">
-                    @csrf
-                    @method('DELETE')
-                    <x-button type="submit" variant="danger">Delete</x-button>
-                </form>
+<div class="page narrow">
+
+    <div class="chat-header">
+        <a href="{{ route('dashboard') }}" class="chat-back">← Back</a>
+        <div class="mini-person">
+            <span>{{ strtoupper(substr($other->name, 0, 1)) }}</span>
+            <div>
+                <strong>{{ $other->name }}</strong>
+                <small>{{ ucfirst($other->role) }}</small>
             </div>
         </div>
-        <article class="detail-card">
-            <p>{{ $message->body }}</p>
-            <p>Connection: {{ $message->connection->sender->name }} + {{ $message->connection->receiver->name }}</p>
-            <p>Read at: {{ $message->read_at?->format('Y-m-d H:i') ?? 'Unread' }}</p>
-        </article>
-        <x-button :href="route('messages.index')" variant="secondary">Back</x-button>
-    </section>
+    </div>
+
+    <div class="chat-window" id="chat-window">
+        @forelse ($messages as $message)
+            <div class="bubble-row {{ $message->sender_id === auth()->id() ? 'mine' : 'theirs' }}">
+                <div class="bubble">
+                    {{ $message->body }}
+                    <time>{{ $message->created_at->format('H:i') }}</time>
+                </div>
+            </div>
+        @empty
+            <p class="chat-empty">No messages yet. Say hello! 👋</p>
+        @endforelse
+    </div>
+
+    <form method="POST" action="{{ route('chat.store', $connection) }}" class="chat-form">
+        @csrf
+        <input
+            type="text"
+            name="body"
+            placeholder="Type a message..."
+            autocomplete="off"
+            required
+            class="{{ $errors->has('body') ? 'is-invalid' : '' }}"
+        >
+        <button type="submit" class="btn btn-primary">Send</button>
+    </form>
+
+</div>
+
+<script>
+    // Auto-scroll to bottom of chat
+    const win = document.getElementById('chat-window');
+    if (win) win.scrollTop = win.scrollHeight;
+</script>
 @endsection

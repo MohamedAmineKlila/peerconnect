@@ -4,97 +4,47 @@ namespace App\Http\Controllers;
 
 use App\Models\Connection;
 use App\Models\Message;
-use App\Models\User;
 use Illuminate\Http\Request;
 
 class MessageController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function show(Connection $connection)
     {
-        $search = request('search');
-        $messages = Message::with(['connection.sender', 'connection.receiver', 'sender'])
-            ->when($search, fn ($query) => $query->where('body', 'like', "%{$search}%"))
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+        $user = auth()->user();
 
-        return view('messages.index', compact('messages', 'search'));
+        // Only allow matched users to view the chat
+        abort_unless(
+            $connection->status === 'matched' &&
+            ($connection->sender_id === $user->id || $connection->receiver_id === $user->id),
+            403
+        );
+
+        $messages = $connection->messages()->with('sender')->orderBy('created_at')->get();
+        $other    = $connection->sender_id === $user->id
+                        ? $connection->receiver
+                        : $connection->sender;
+
+        return view('messages.show', compact('connection', 'messages', 'other'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(Request $request, Connection $connection)
     {
-        return view('messages.create', [
-            'message' => new Message(),
-            'connections' => Connection::with(['sender', 'receiver'])->orderByDesc('created_at')->get(),
-            'users' => User::orderBy('name')->get(),
+        $user = auth()->user();
+
+        abort_unless(
+            $connection->status === 'matched' &&
+            ($connection->sender_id === $user->id || $connection->receiver_id === $user->id),
+            403
+        );
+
+        $request->validate(['body' => 'required|string|max:1000']);
+
+        Message::create([
+            'connection_id' => $connection->id,
+            'sender_id'     => $user->id,
+            'body'          => $request->body,
         ]);
-    }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        $message = Message::create($this->validatedData($request));
-
-        return redirect()->route('messages.show', $message)->with('success', 'Message sent.');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Message $message)
-    {
-        $message->load(['connection.sender', 'connection.receiver', 'sender']);
-
-        return view('messages.show', compact('message'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Message $message)
-    {
-        return view('messages.edit', [
-            'message' => $message,
-            'connections' => Connection::with(['sender', 'receiver'])->orderByDesc('created_at')->get(),
-            'users' => User::orderBy('name')->get(),
-        ]);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Message $message)
-    {
-        $message->update($this->validatedData($request));
-
-        return redirect()->route('messages.show', $message)->with('success', 'Message updated.');
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Message $message)
-    {
-        $message->delete();
-
-        return redirect()->route('messages.index')->with('success', 'Message deleted.');
-    }
-
-    private function validatedData(Request $request): array
-    {
-        return $request->validate([
-            'connection_id' => ['required', 'exists:connections,id'],
-            'sender_id' => ['required', 'exists:users,id'],
-            'body' => ['required', 'string', 'min:2', 'max:1000'],
-            'read_at' => ['nullable', 'date'],
-        ]);
+        return back();
     }
 }
