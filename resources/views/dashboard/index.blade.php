@@ -172,22 +172,22 @@
                 <section class="activity-panel" id="matches">
                     <h2>Matches</h2>
                     <div class="mini-match-list">
-                        @forelse ($matches as $match)
-                            @php($other = $match->sender_id === $user->id ? $match->receiver : $match->sender)
-                            <div class="match-row">
-                                <a href="{{ route('connections.show', $match) }}" class="match-info">
-                                    <span>{{ strtoupper(substr($other->name, 0, 1)) }}</span>
-                                    <div>
-                                        <strong>{{ $other->name }}</strong>
-                                        <small>{{ $match->matched_at?->format('Y-m-d') ?? 'Matched' }}</small>
-                                    </div>
-                                </a>
-                                <a href="{{ route('chat.show', $match) }}" class="chat-pill">💬 Message</a>
-                            </div>
-                        @empty
-                            <p>No matches yet. Press like on profiles you want to connect with.</p>
-                        @endforelse
-                    </div>
+    @forelse ($matches as $match)
+        @php($other = $match->sender_id === $user->id ? $match->receiver : $match->sender)
+        <div class="match-row">
+            <a href="{{ route('chat.show', $match) }}" class="match-info">
+                <span>{{ strtoupper(substr($other->name, 0, 1)) }}</span>
+                <div>
+                    <strong>{{ $other->name }}</strong>
+                    <small>{{ $match->matched_at?->format('Y-m-d') ?? 'Matched' }}</small>
+                </div>
+            </a>
+            <a href="{{ route('chat.show', $match) }}" class="chat-pill">💬 Message</a>
+        </div>
+    @empty
+        <p>No matches yet. Press like on profiles you want to connect with.</p>
+    @endforelse
+</div>
                 </section>
 
                 <section class="activity-panel">

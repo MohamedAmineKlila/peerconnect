@@ -12,7 +12,6 @@ class MessageController extends Controller
     {
         $user = auth()->user();
 
-        // Only allow matched users to view the chat
         abort_unless(
             $connection->status === 'matched' &&
             ($connection->sender_id === $user->id || $connection->receiver_id === $user->id),
@@ -21,8 +20,8 @@ class MessageController extends Controller
 
         $messages = $connection->messages()->with('sender')->orderBy('created_at')->get();
         $other    = $connection->sender_id === $user->id
-                        ? $connection->receiver
-                        : $connection->sender;
+                        ? $connection->receiver->load('profile.interests')
+                        : $connection->sender->load('profile.interests');
 
         return view('messages.show', compact('connection', 'messages', 'other'));
     }
