@@ -35,9 +35,18 @@ class AppServiceProvider extends ServiceProvider
                 ->whereNotIn('sender_id', $respondedUserIds)
                 ->count();
 
-           $matchesCount = Connection::where('status', 'matched')
-    ->where('sender_id', $user->id)
-    ->count();
+            $matchesCount = Connection::where('status', 'matched')
+                ->where(function ($query) use ($user) {
+                    $query->where('sender_id', $user->id)
+                          ->orWhere('receiver_id', $user->id);
+                })
+                ->get()
+                ->unique(function ($connection) use ($user) {
+                    return $connection->sender_id === $user->id
+                        ? $connection->receiver_id
+                        : $connection->sender_id;
+                })
+                ->count();
 
             $view->with([
                 'navIncomingLikesCount' => $incomingLikesCount,
