@@ -1,6 +1,7 @@
 # PeerConnect
 
 PeerConnect is a Laravel student-teacher matching website inspired by Tinder. Students and teachers can be represented with searchable profiles, interests, connection statuses, messages, and contact requests.
+
 Key Technologies: Laravel, PHP, MySQL, Blade Templates, JavaScript
 
 ## Features
